@@ -1,6 +1,11 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    firebase (0.2.6)
+      httpclient
+      json
+    firebase_token_generator (2.0.0)
+    httpclient (2.8.0)
     json (1.8.3)
     mini_portile2 (2.1.0)
     nokogiri (1.6.8)
@@ -12,5 +17,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  firebase
+  firebase_token_generator
   json
   nokogiri
