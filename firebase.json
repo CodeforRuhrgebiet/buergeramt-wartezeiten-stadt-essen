@@ -9,6 +9,14 @@
         "source": "**",
         "destination": "/index.html"
       }
+    ],
+    "ignore": [
+      "firebase.json",
+      "config.yml",
+      "Gemfile",
+      "Gemfile.lock",
+      "lib/**",
+      "run.rb"
     ]
   }
 }
