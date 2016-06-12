@@ -1,0 +1,17 @@
+{
+  "rules": {
+    ".read": true,
+    ".write": "auth.uid == 'lksfwj5wqHb7wm8Twa5rcU4kUFx2'",
+    "cases": {
+      "perso-beantragen": {
+        ".indexOn": ["angefragt_timestamp"]
+      },
+      "anmeldung": {
+        ".indexOn": ["angefragt_timestamp"]
+      },
+      "ummeldung": {
+        ".indexOn": ["angefragt_timestamp"]
+      }
+    }
+  }
+}
