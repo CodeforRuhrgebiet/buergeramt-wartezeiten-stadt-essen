@@ -37,7 +37,7 @@ var drawChart = function drawChart() {
 };
 
 window.onload = function () {
-  persoRef = firebase.database().ref("cases/perso");
+  persoRef = firebase.database().ref("cases/perso-beantragen");
   var persoQuery = persoRef.orderByChild("angefragt_timestamp").limitToLast(100);
   persoQuery.on("value", function(snapshot) {
     snapshot.forEach(function(data) {
