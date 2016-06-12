@@ -1,0 +1,5 @@
+---
+firebase:
+  secret: 'firebase-secret here'
+  user_uuid: 'login-uuid here'
+  user_password: 'login-password here'
