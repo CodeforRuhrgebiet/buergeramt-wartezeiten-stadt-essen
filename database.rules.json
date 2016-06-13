@@ -6,6 +6,9 @@
       "perso-beantragen": {
         ".indexOn": ["angefragt_timestamp"]
       },
+      "reisepass-beantragen": {
+        ".indexOn": ["angefragt_timestamp"]
+      },
       "anmeldung": {
         ".indexOn": ["angefragt_timestamp"]
       },
