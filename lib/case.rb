@@ -55,14 +55,14 @@ class Case
   end
 
   def set_raw_response!
-    @raw_response = Nokogiri::HTML(open("#{base_url}#{@request_path}"))
+    @raw_response = Nokogiri::HTML(open("#{base_url}#{@request_path}", read_timeout: 10))
   end
 
   def set_detail_response!
     detail_path = @raw_response.css('#standortauswahl .nav_menu2').first['href']
-    @raw_details = Nokogiri::HTML(open("#{base_url}#{detail_path}"))
+    @raw_details = Nokogiri::HTML(open("#{base_url}#{detail_path}", read_timeout: 10))
   end
-  
+
   def base_url
     'https://meintermin.essen.de/termine/index.php'
   end
