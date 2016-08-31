@@ -14,8 +14,12 @@ class Case
     @firebase_key = key
     @title = title
     @request_path = path
-    set_raw_response!
-    set_detail_response!
+    timeout(15) do
+      set_raw_response!
+    end
+    timeout(15) do
+      set_detail_response!
+    end
   end
 
   def data
@@ -55,12 +59,12 @@ class Case
   end
 
   def set_raw_response!
-    @raw_response = Nokogiri::HTML(open("#{base_url}#{@request_path}", read_timeout: 10))
+    @raw_response = Nokogiri::HTML(open("#{base_url}#{@request_path}"))
   end
 
   def set_detail_response!
     detail_path = @raw_response.css('#standortauswahl .nav_menu2').first['href']
-    @raw_details = Nokogiri::HTML(open("#{base_url}#{detail_path}", read_timeout: 10))
+    @raw_details = Nokogiri::HTML(open("#{base_url}#{detail_path}"))
   end
 
   def base_url
