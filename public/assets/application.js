@@ -103,7 +103,7 @@ var setData = function setData() {
   var persoQuery = persoRef.orderByChild("angefragt_timestamp").limitToLast(100);
   persoQuery.on("value", function(snapshot) {
     snapshot.forEach(function(data) {
-      console.log(data.val());
+      // console.log(data.val());
       var date = new Date(data.val().angefragt_timestamp * 1000);
       var xValue = Date.UTC(date.getFullYear(), date.getMonth(), date.getDate());
       var yValue = data.val().wartezeit;
