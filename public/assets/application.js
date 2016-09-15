@@ -1,4 +1,5 @@
 var persoDataPoints = [];
+var reiseDataPoints = [];
 var anmeldungDataPoints = [];
 var ummeldungDataPoints = [];
 
@@ -30,6 +31,38 @@ var drawPersoChart = function drawPersoChart() {
     series: [{
       name: 'Wartezeit um einen Personalausweis zu beantragen',
       data: persoDataPoints
+    }]
+  });
+};
+
+var drawReiseChart = function drawReiseChart() {
+  $('#reisepass').highcharts({
+    title: {
+      text: 'Reisepass beantragen',
+      x: -20 //center
+    },
+    xAxis: {
+      type: 'datetime'
+    },
+    yAxis: {
+      title: {
+        text: 'Wartezeit (Tage)'
+      },
+      plotLines: [{
+        value: 0,
+        width: 1,
+        color: '#808080'
+      }]
+    },
+    tooltip: {
+      valueSuffix: ' Tage'
+    },
+    legend: {
+      enabled: false
+    },
+    series: [{
+      name: 'Wartezeit um einen Reisepass zu beantragen',
+      data: reiseDataPoints
     }]
   });
 };
@@ -110,6 +143,20 @@ var setData = function setData() {
       var dataPoint = [xValue, yValue];
       persoDataPoints.push(dataPoint);
       drawPersoChart();
+    });
+  });
+
+  reiseRef = firebase.database().ref("cases/reisepass-beantragen");
+  var reiseQuery = reiseRef.orderByChild("angefragt_timestamp").limitToLast(100);
+  reiseQuery.on("value", function(snapshot) {
+    snapshot.forEach(function(data) {
+      // console.log(data.val());
+      var date = new Date(data.val().angefragt_timestamp * 1000);
+      var xValue = Date.UTC(date.getFullYear(), date.getMonth(), date.getDate());
+      var yValue = data.val().wartezeit;
+      var dataPoint = [xValue, yValue];
+      reiseDataPoints.push(dataPoint);
+      drawReiseChart();
     });
   });
 
