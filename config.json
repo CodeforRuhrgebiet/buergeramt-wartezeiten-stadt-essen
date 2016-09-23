@@ -1,0 +1,10 @@
+{
+  "general": {
+    "plugins": [
+      "essen"
+    ]
+  },
+  "essen" : {
+    "enabled": true
+  }
+}
