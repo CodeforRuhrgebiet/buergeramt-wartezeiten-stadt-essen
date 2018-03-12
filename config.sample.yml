@@ -1,5 +1,7 @@
 ---
-firebase:
-  secret: 'firebase-secret here'
-  user_uuid: 'login-uuid here'
-  user_password: 'login-password here'
+mysql:
+  host: 127.0.0.1
+  user: '...'
+  password: '...'
+  database: '...'
+  table: '...'

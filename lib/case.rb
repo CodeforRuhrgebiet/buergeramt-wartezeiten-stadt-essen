@@ -2,16 +2,15 @@ class Case
   require 'open-uri'
   require 'nokogiri'
   require 'date'
-  require 'firebase'
-  require 'firebase_token_generator'
+  require 'mysql2'
 
-  @firebase_key = false
+  @type = false
   @request_path = false
   @raw_response = false
   @raw_details = false
 
   def initialize(key, title, path)
-    @firebase_key = key
+    @type = key
     @title = title
     @request_path = path
     timeout(15) do
@@ -23,26 +22,53 @@ class Case
   end
 
   def data
-    {
+    @data_cache ||= {
       beschreibung: @title,
-      angefragt_timestamp: Time.now.to_i,
+      angefragt_timestamp: Time.now,
       standort: @raw_details.xpath('//*[@id="standort"]').last['value'],
       wartebereich: @raw_details.xpath('//*[@id="warteschlange"]').last['value'],
       adresse: @raw_details.xpath('//*[@id="adresse"]').last['value'],
       anliegen: @raw_details.xpath('//*[@id="anliegen"]').last.text,
       tag: @raw_details.xpath('//*[@id="tag"]').last['value'],
       uhrzeit: @raw_details.xpath('//*[@id="uhrzeit"]').last['value'],
-      termin_timestamp: appointment.to_i,
+      termin_timestamp: appointment,
       wartezeit: waiting_days
     }
   end
 
   def save_data!
-    payload = { uid: @@config['firebase']['user_uuid'], password: @@config['firebase']['user_password']}
-    generator = Firebase::FirebaseTokenGenerator.new(@@config['firebase']['secret'])
-    @firebase_jwt = generator.create_token(payload)
-    firebase = Firebase::Client.new(firebase_url)
-    push_to_firebase!(firebase, @firebase_key, data)
+    @db = Mysql2::Client.new(host: @@config['mysql']['host'],
+                             username: @@config['mysql']['user'],
+                             password: @@config['mysql']['password'],
+                             database: @@config['mysql']['database'])
+
+    @db.query("INSERT INTO #{@@config['mysql']['table']}
+              (
+                type,
+                adresse,
+                angefragt_timestamp,
+                standort,
+                termin_timestamp,
+                uhrzeit,
+                wartebereich,
+                wartezeit,
+                beschreibung,
+                tag,
+                anliegen
+              ) VALUES
+              (
+                '#{@type}',
+                '#{data[:adresse]}',
+                '#{data[:angefragt_timestamp]}',
+                '#{data[:standort]}',
+                '#{data[:termin_timestamp]}',
+                '#{data[:uhrzeit]}',
+                '#{data[:wartebereich]}',
+                '#{data[:wartezeit]}',
+                '#{data[:beschreibung]}',
+                '#{data[:tag]}',
+                '#{data[:anliegen]}'
+              )")
   end
 
   private
@@ -71,10 +97,6 @@ class Case
     'https://meintermin.essen.de/termine/index.php'
   end
 
-  def firebase_url
-    'https://essen-buergeramt-wartezeiten.firebaseio.com/'
-  end
-
   def date_data
     {
       angefragt_date: Date.today.to_time.to_i
@@ -88,24 +110,5 @@ class Case
   def current_day_entry(data)
     data.each { |entry| return entry if entry[1]['angefragt_date'] == current_date_timestamp }
     nil
-  end
-
-  def push_to_firebase!(firebase, key, data)
-    response = firebase.get("cases/#{key}")
-    if response.raw_body != 'null'
-      result = JSON.parse(response.raw_body)
-      current_day_entry_res = current_day_entry(result)
-      if current_day_entry_res
-        puts 'Updating day value..'
-        node = current_day_entry_res.first
-        puts "#{firebase.update("cases/#{key}/#{node}", date_data.merge(data), "auth=#{@firebase_jwt}").raw_body}"
-      else
-        puts 'Creating day value..'
-        puts "#{firebase.push("cases/#{key}", date_data.merge(data), "auth=#{@firebase_jwt}").raw_body}"
-      end
-    else
-      puts 'Needs to initialize!'
-      puts "#{firebase.push("cases/#{key}", date_data.merge(data), "auth=#{@firebase_jwt}").raw_body}"
-    end
   end
 end
