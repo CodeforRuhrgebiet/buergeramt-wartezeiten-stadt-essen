@@ -13,16 +13,17 @@ class Case
     @type = key
     @title = title
     @request_path = path
-    timeout(15) do
+    Timeout.timeout(15) do
       set_raw_response!
     end
-    timeout(15) do
+    Timeout.timeout(15) do
       set_detail_response!
     end
   end
 
   def data
     @data_cache ||= {
+      type: @type,
       beschreibung: @title,
       angefragt_timestamp: Time.now,
       standort: @raw_details.xpath('//*[@id="standort"]').last['value'],
@@ -36,42 +37,45 @@ class Case
     }
   end
 
+  def save_to_database(data)
+    rows = data.keys.map(&:to_s)
+    cell_data = data.values.map { |v| escape_value(v) }
+
+    query = "INSERT INTO #{ENV['MYSQL_TABLE']} (#{rows.join(', ')}) " \
+            "VALUES (#{cell_data.join(', ')})"
+
+    begin
+      @db.query(query)
+    rescue Mysql2::Error
+    end
+  end
+
   def save_data!
     @db = Mysql2::Client.new(host: ENV['MYSQL_HOST'],
                              username: ENV['MYSQL_USER'],
                              password: ENV['MYSQL_PASSWORD'],
                              database: ENV['MYSQL_DATABASE'])
 
-    @db.query("INSERT INTO #{ENV['MYSQL_TABLE']}}
-              (
-                type,
-                adresse,
-                angefragt_timestamp,
-                standort,
-                termin_timestamp,
-                uhrzeit,
-                wartebereich,
-                wartezeit,
-                beschreibung,
-                tag,
-                anliegen
-              ) VALUES
-              (
-                '#{@type}',
-                '#{data[:adresse]}',
-                '#{data[:angefragt_timestamp]}',
-                '#{data[:standort]}',
-                '#{data[:termin_timestamp]}',
-                '#{data[:uhrzeit]}',
-                '#{data[:wartebereich]}',
-                '#{data[:wartezeit]}',
-                '#{data[:beschreibung]}',
-                '#{data[:tag]}',
-                '#{data[:anliegen]}'
-              )")
+    rows = data.keys.map(&:to_s)
+    cell_data = data.values.map { |v| escape_value(v) }
+
+    query = "INSERT INTO #{ENV['MYSQL_TABLE']} (#{rows.join(', ')}) " \
+            "VALUES (#{cell_data.join(', ')})"
+
+    p query
+
+    @db.query(query)
   end
 
   private
+
+  def escape_value(value)
+    return 'NULL' unless value
+    return "'#{value}'" if value.is_a?(Time) || value.is_a?(Date)
+    return value unless value.is_a?(String)
+    return 'NULL' if value.empty?
+    "'#{Mysql2::Client.escape(value)}'"
+  end
 
   def appointment
     date_string = @raw_details.xpath('//*[@id="tag"]').last['value'].match(/(0[1-9]|[1-2][0-9]|3[0-1]).(0[1-9]|1[0-2]).[0-9]{4}/).to_s
