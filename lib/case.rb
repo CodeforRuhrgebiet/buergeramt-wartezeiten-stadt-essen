@@ -37,12 +37,12 @@ class Case
   end
 
   def save_data!
-    @db = Mysql2::Client.new(host: @@config['mysql']['host'],
-                             username: @@config['mysql']['user'],
-                             password: @@config['mysql']['password'],
-                             database: @@config['mysql']['database'])
+    @db = Mysql2::Client.new(host: ENV['MYSQL_HOST'],
+                             username: ENV['MYSQL_USER'],
+                             password: ENV['MYSQL_PASSWORD'],
+                             database: ENV['MYSQL_DATABASE'])
 
-    @db.query("INSERT INTO #{@@config['mysql']['table']}
+    @db.query("INSERT INTO #{ENV['MYSQL_TABLE']}}
               (
                 type,
                 adresse,
