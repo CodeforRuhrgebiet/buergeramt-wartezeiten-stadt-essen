@@ -62,8 +62,6 @@ class Case
     query = "INSERT INTO #{ENV['MYSQL_TABLE']} (#{rows.join(', ')}) " \
             "VALUES (#{cell_data.join(', ')})"
 
-    p query
-
     @db.query(query)
   end
 
